@@ -1,4 +1,8 @@
 defmodule SongAgentServer do
+  @moduledoc """
+  An agent server to provide random songs tuples {song_title, song_path}
+  """
+
   @songs_file_path "./assets/song_list.txt"
 
   use Agent
