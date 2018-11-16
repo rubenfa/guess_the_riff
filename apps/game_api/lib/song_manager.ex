@@ -4,21 +4,14 @@ defmodule SongManager do
 
   def get_song() do
     @songs_file_path
-    |> load_from_file
+    |> load_songs
     |> Enum.random
   end
 
-  def load_from_file(songs_file_path) do
+  def load_songs(songs_file_path) do
     Path.join(__DIR__, songs_file_path)
-    |> File.read!
-    |> parse_file()    
-  end
-
-  defp parse_file(""), do: []
-  defp parse_file(text) do
-    text
-    |> String.split(~r{(\r\n|\r|\n)})
-    |> Enum.map(&parse_line(&1))
+    |> File.stream!([], :line)
+    |> Stream.map(&parse_line(&1))
   end
 
   defp parse_line([""]), do: {}
@@ -29,6 +22,6 @@ defmodule SongManager do
   end
 
   defp extract_song([""]), do: {}
-  defp extract_song([title, path]), do: {title, path}
+  defp extract_song([title, path]), do: {title, String.replace(path, "\n", "")}
   
 end
