@@ -1,26 +1,40 @@
-defmodule SongManagerTests do
+defmodule SongAgentServerTests do
   use ExUnit.Case
   doctest SongAgentServer
 
-  setup_all do
+  setup do
     SongAgentServer.start_link()
-
     {:ok, []}
   end
 
   test "SongAgentServer give a song tuple" do
-    {song_title, path} = SongAgentServer.get_song()
+    {song_title, path} = SongAgentServer.get_played_song()
 
     assert String.length(song_title) > 0
     assert String.length(path) > 0
   end
 
   test "SongAgentServer should return two different songs" do
-    {song_title1, song_path1} = SongAgentServer.get_song()
-    {song_title2, song_path2} = SongAgentServer.get_song()
+    for n <- 1..10 do
+      {song_title1, song_path1} = SongAgentServer.get_played_song()
+      {song_title2, song_path2} = SongAgentServer.get_played_song()
 
-    assert song_title1 != song_title2
-    assert song_path1 != song_path2
+      assert song_title1 != song_title2
+      assert song_path1 != song_path2
+    end
+  end
+
+  test "SongAgentServer should return 4 different songs for other songs (NOT PLAYED)" do
+    for n <- 1..100 do
+      other_songs = SongAgentServer.get_songs(4)
+
+      different_songs =
+        other_songs
+        |> Enum.uniq()
+        |> Enum.count()
+
+      assert different_songs == 4
+    end
   end
 
   test "SongAgentServer file whith songs and returns a enumeration" do

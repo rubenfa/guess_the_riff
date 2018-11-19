@@ -1,6 +1,9 @@
 defmodule PlayerGame do
-  defstruct id: "", nick_name: "", score: [], ready: false
+  @moduledoc """
+  This is the struct for create new users to play the game
+  """
 
+  defstruct id: "", nick_name: "", score: [], ready: false
 
   def new(id, nick_name) do
     %PlayerGame{
@@ -10,7 +13,6 @@ defmodule PlayerGame do
   end
 
   def is_ready(%PlayerGame{} = player) do
-    %{player | ready: true }
+    %{player | ready: true}
   end
-
 end
