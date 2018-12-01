@@ -3,7 +3,7 @@ defmodule RiffGame do
   This module controls the state of a game play of the riff game.
   """
 
-  defstruct id: "", players: [], turns: []
+  defstruct id: "", players: [], turns: [], score: []
 
   def create(turns \\ 4) do
     %RiffGame{

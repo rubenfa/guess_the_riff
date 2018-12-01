@@ -18,15 +18,17 @@ defmodule GamePlay do
   end
 
   def play(%RiffGame{players: []}), do: []
-  def play(%RiffGame{players: players} = game) do
+  def play(%RiffGame{turns: turns}, turn) when turn - 1 > length(turns), do: []
+
+  def play(%RiffGame{players: players} = game, turn) do
     if Enum.all?(players, fn p -> p.ready end) do
-      get_next_turn(game)
+      get_next_turn(game, turn)
     else
       []
     end
   end
 
-  defp get_next_turn(game) do
-    game.turns |> Enum.fetch!(0)
+  defp get_next_turn(game, turn) do
+    game.turns |> Enum.fetch!(turn)
   end
 end

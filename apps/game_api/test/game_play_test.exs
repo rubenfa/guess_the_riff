@@ -21,7 +21,7 @@ defmodule GamePlayTests do
       |> GamePlay.join("RockMaster")
       |> GamePlay.join("MegaRocker")
 
-    turn = GamePlay.play(game)
+    turn = GamePlay.play(game, 1)
 
     assert turn == []
   end
@@ -36,9 +36,22 @@ defmodule GamePlayTests do
       |> GamePlay.player_ready("RockMaster")
       |> GamePlay.player_ready("MegaRocker")
 
-    turn = GamePlay.play(game)
+    turn = GamePlay.play(game, 1)
 
     assert Enum.all?(game.players, fn p -> p.ready end)
     assert turn = %GameTurn{}
+  end
+
+  test "The players can pick up their options" do
+    game = RiffGame.create()
+
+    game =
+      game
+      |> GamePlay.join("RockMaster")
+      |> GamePlay.join("MegaRocker")
+      |> GamePlay.player_ready("RockMaster")
+      |> GamePlay.player_ready("MegaRocker")
+
+    turn = GamePlay.play(game, 1)
   end
 end
