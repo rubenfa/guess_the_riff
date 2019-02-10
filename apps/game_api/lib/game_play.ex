@@ -3,32 +3,54 @@ defmodule GamePlay do
   This module controls every step of a game play.
   """
 
-  def join(%RiffGame{players: players} = game, nick_name) do
-    player_count = players |> Enum.count()
-
-    player = PlayerGame.new(player_count + 1, nick_name)
-    RiffGame.add_player(game, player)
+  def join(%RiffGame{players: players, status: :waiting_players} = game, nick_name) do
+    case Enum.any?(players, fn(p) -> p.nick_name == nick_name end ) do
+      true -> {:error, "There is already a player with the name #{nick_name}" }
+      _ -> {:ok, RiffGame.add_player(game, PlayerGame.new(nick_name))}
+    end
   end
 
-  def player_ready(game, nick_name) do
+  def join(_, nick_name), do: {:error, "#{nick_name} cannot join at this point of the game play"}
+
+  def ready(%RiffGame{players: players, status: :waiting_players} = game, nick_name) do
+
+    with {:ok, game} <- set_player_ready(game, nick_name),
+          game <- RiffGame.start_game?(game)
+      do
+         {:ok, game}
+      else
+        {:error, message} -> {:error, message}
+    end
+
+  end
+
+  def ready(_, nick_name), do: {:error, "#{nick_name} cannot set as ready at this point of the game play"}
+
+  def next(%RiffGame{players: players, status: next_turn} = game) do
+      {:ok, RiffGame.next_turn(game)}
+  end
+
+  def next(_), do: {:error, "Cannot play next turn at this point of the game play"}
+
+  # def play(:choose, %RiffGame{} = game, player_name, picked) do    
+  #   turn_number = (game.played_turns |> Enum.count()) + 1
+
+  #   # score = get_score(game.current_turn.played_song, picked)
+
+  #   # game
+  #   # |> RiffGame.get_player(player_name)
+  #   # |> PlayerGame.save_score(player, score, turn_number)
+
+  #   # cond do
+  #   #   game.current_turn.played_song == picked -> PlayerGame.save_score(player, 10, turn_number)
+  #   #   true -> PlayerGame.save_score
+  #   # end
+  # end
+
+  defp set_player_ready(game, nick_name) do
     case game.players |> Enum.find(fn p -> p.nick_name == nick_name end) do
-      nil -> game
-      player -> player |> RiffGame.player_ready(game)
+      nil -> {:error, "There is no player with the name #{nick_name}"}
+      player -> {:ok, RiffGame.player_ready(game, player)}
     end
-  end
-
-  def play(%RiffGame{players: []}), do: []
-  def play(%RiffGame{turns: turns}, turn) when turn - 1 > length(turns), do: []
-
-  def play(%RiffGame{players: players} = game, turn) do
-    if Enum.all?(players, fn p -> p.ready end) do
-      get_next_turn(game, turn)
-    else
-      []
-    end
-  end
-
-  defp get_next_turn(game, turn) do
-    game.turns |> Enum.fetch!(turn)
   end
 end

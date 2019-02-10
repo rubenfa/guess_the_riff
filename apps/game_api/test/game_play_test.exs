@@ -9,49 +9,89 @@ defmodule GamePlayTests do
 
   test "A game does not start if has not players" do
     game = RiffGame.create()
-    turn = GamePlay.play(game)
-    assert turn == []
+    {:error, message} = GamePlay.next(game)
+
+    assert message == "Cannot play next turn at this point of the game play"
+  end
+
+  test "A game cannot have two players with the same name" do
+
+    game = RiffGame.create()
+
+    with {:ok, game} <- GamePlay.join(game, "RockMaster"),
+         {:error, message} <- GamePlay.join(game, "RockMaster")
+      do
+      assert message == "There is already a player with the name RockMaster"
+      else
+        {:ok, message} -> assert "error" == message
+    end
+
   end
 
   test "A game does not start if all the players are not ready" do
+
     game = RiffGame.create()
 
-    game =
-      game
-      |> GamePlay.join("RockMaster")
-      |> GamePlay.join("MegaRocker")
-
-    turn = GamePlay.play(game, 1)
-
-    assert turn == []
+    with {:ok, game} <- GamePlay.join(game, "RockMaster"),
+         {:ok, game} <- GamePlay.join(game, "MegaRocker"),
+         {:error, message} <- GamePlay.next(game)
+      do
+      assert message == "Cannot play next turn at this point of the game play"
+      else
+        {:error, message} -> assert "error" == message
+    end
   end
 
   test "A game starts if all the players are ready" do
     game = RiffGame.create()
 
-    game =
-      game
-      |> GamePlay.join("RockMaster")
-      |> GamePlay.join("MegaRocker")
-      |> GamePlay.player_ready("RockMaster")
-      |> GamePlay.player_ready("MegaRocker")
-
-    turn = GamePlay.play(game, 1)
-
-    assert Enum.all?(game.players, fn p -> p.ready end)
-    assert turn = %GameTurn{}
+    with {:ok, game} <- GamePlay.join(game, "RockMaster"),
+         {:ok, game} <- GamePlay.join(game, "MegaRocker"),
+         {:ok, game} <- GamePlay.ready(game, "RockMaster"),
+         {:ok, game} <- GamePlay.ready(game, "MegaRocker"),
+         {:ok, game} <- GamePlay.next(game)
+      do
+      assert game.status == :next_turn
+      else
+        {:error, message} -> assert "error" == message
+    end
   end
 
-  test "The players can pick up their options" do
+  test "A game turn is the same always if the options are not saved" do
     game = RiffGame.create()
 
     game =
       game
-      |> GamePlay.join("RockMaster")
-      |> GamePlay.join("MegaRocker")
-      |> GamePlay.player_ready("RockMaster")
-      |> GamePlay.player_ready("MegaRocker")
+      |> GamePlay.play(:join, "RockMaster")
+      |> GamePlay.play(:join, "MegaRocker")
+      |> GamePlay.play(:player_ready, "RockMaster")
+      |> GamePlay.play(:player_ready, "MegaRocker")
 
-    turn = GamePlay.play(game, 1)
+    game_first_turn = GamePlay.play(:next_turn, game)
+    game_second_turn = GamePlay.play(:next_turn, game)
+
+    assert game_first_turn == game_second_turn
+
   end
+
+  # test "The players can pick up their options and save " do
+  #   game = RiffGame.create()
+
+  #   game =
+  #     game
+  #     |> GamePlay.join("RockMaster")
+  #     |> GamePlay.join("MegaRocker")
+  #     |> GamePlay.player_ready("RockMaster")
+  #     |> GamePlay.player_ready("MegaRocker")
+  #     |> GamePlay.next
+
+  #    {correct_song, _} = game.current_turn.played_song
+
+  #    game = game |> GamePlay.pick_song("MegaRocker", correct_song)
+  #    game = game |> GamePlay.pick_song("RockMaster", "not exist song")
+
+
+     
+
+  # end
 end

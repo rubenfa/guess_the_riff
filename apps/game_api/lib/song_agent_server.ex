@@ -15,7 +15,6 @@ defmodule SongAgentServer do
 
   @doc "Gets a new random song, to be played. Any time a song is picked up to be played, it is not choosen again"
   def get_played_song do
-
     selected = Agent.get(__MODULE__, fn {songs, played} -> get_random_song(songs, played) end)
 
     Agent.update(__MODULE__, fn {songs, played} -> {songs, [selected | played]} end)
@@ -28,11 +27,11 @@ defmodule SongAgentServer do
     Agent.get(__MODULE__, fn {songs, _} -> get_random_song(songs, songs_to_ignore) end)
   end
 
-  def get_songs(number, selected_songs \\ []) when number > 0 do
-      selected = get_song(selected_songs)
-      get_songs(number - 1, [selected | selected_songs])
+  def get_songs(0, _ingored_songs), do: []
+  def get_songs(number, ignored_songs \\ []) do
+    song = get_song(ignored_songs)
+    [song | get_songs(number - 1, [song | ignored_songs])]
   end
-  def get_songs(0, selected_songs), do: selected_songs
 
   @doc "Return all the songs from a file path"
   def load_songs(songs_file_path) do
@@ -45,11 +44,12 @@ defmodule SongAgentServer do
 
   defp get_random_song(songs, selected_songs) do
     songs
-    |> Enum.reject(fn s -> Enum.member?(selected_songs, s)  end)
-    |> Enum.random
+    |> Enum.reject(fn f -> Enum.any?(selected_songs, fn s -> s == f end) end)
+    |> Enum.random()
   end
 
   defp parse_line([""]), do: {}
+
   defp parse_line(line) do
     line
     |> String.split("#")

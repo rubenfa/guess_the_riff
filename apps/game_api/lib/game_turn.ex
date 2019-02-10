@@ -10,7 +10,7 @@ defmodule GameTurn do
 
     %GameTurn{
       played_song: played,
-      other_songs: SongAgentServer.get_songs(3)
+      other_songs: SongAgentServer.get_songs(3, [played])
     }
   end
 end

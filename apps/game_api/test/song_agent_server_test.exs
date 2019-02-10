@@ -15,7 +15,7 @@ defmodule SongAgentServerTests do
   end
 
   test "SongAgentServer should return two different songs" do
-    for n <- 1..10 do
+    for _ <- 1..10 do
       {song_title1, song_path1} = SongAgentServer.get_played_song()
       {song_title2, song_path2} = SongAgentServer.get_played_song()
 
@@ -25,7 +25,7 @@ defmodule SongAgentServerTests do
   end
 
   test "SongAgentServer should return 4 different songs for other songs (NOT PLAYED)" do
-    for n <- 1..100 do
+    for _ <- 1..100 do
       other_songs = SongAgentServer.get_songs(4)
 
       different_songs =
@@ -34,6 +34,18 @@ defmodule SongAgentServerTests do
         |> Enum.count()
 
       assert different_songs == 4
+    end
+  end
+
+  test "SongAgentServer should return 3 different songs for other songs, and one song played" do
+    for _ <- 1..10 do
+      played_song = SongAgentServer.get_played_song()    
+      other_songs = SongAgentServer.get_songs(3, [played_song])
+
+      assert Enum.count(other_songs) == 3
+      assert other_songs != []
+      assert other_songs |> Enum.uniq() |> Enum.count() == 3
+      refute (other_songs |> Enum.any?(fn(x) -> x == played_song end))
     end
   end
 
