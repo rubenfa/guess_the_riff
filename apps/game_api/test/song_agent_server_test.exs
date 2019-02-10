@@ -39,13 +39,13 @@ defmodule SongAgentServerTests do
 
   test "SongAgentServer should return 3 different songs for other songs, and one song played" do
     for _ <- 1..10 do
-      played_song = SongAgentServer.get_played_song()    
+      played_song = SongAgentServer.get_played_song()
       other_songs = SongAgentServer.get_songs(3, [played_song])
 
       assert Enum.count(other_songs) == 3
       assert other_songs != []
       assert other_songs |> Enum.uniq() |> Enum.count() == 3
-      refute (other_songs |> Enum.any?(fn(x) -> x == played_song end))
+      refute other_songs |> Enum.any?(fn x -> x == played_song end)
     end
   end
 

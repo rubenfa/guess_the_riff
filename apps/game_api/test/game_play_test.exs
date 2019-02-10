@@ -15,30 +15,25 @@ defmodule GamePlayTests do
   end
 
   test "A game cannot have two players with the same name" do
-
     game = RiffGame.create()
 
     with {:ok, game} <- GamePlay.join(game, "RockMaster"),
-         {:error, message} <- GamePlay.join(game, "RockMaster")
-      do
+         {:error, message} <- GamePlay.join(game, "RockMaster") do
       assert message == "There is already a player with the name RockMaster"
-      else
-        {:ok, message} -> assert "error" == message
+    else
+      {:ok, message} -> assert "error" == message
     end
-
   end
 
   test "A game does not start if all the players are not ready" do
-
     game = RiffGame.create()
 
     with {:ok, game} <- GamePlay.join(game, "RockMaster"),
          {:ok, game} <- GamePlay.join(game, "MegaRocker"),
-         {:error, message} <- GamePlay.next(game)
-      do
+         {:error, message} <- GamePlay.next(game) do
       assert message == "Cannot play next turn at this point of the game play"
-      else
-        {:error, message} -> assert "error" == message
+    else
+      {:error, message} -> assert "error" == message
     end
   end
 
@@ -49,11 +44,10 @@ defmodule GamePlayTests do
          {:ok, game} <- GamePlay.join(game, "MegaRocker"),
          {:ok, game} <- GamePlay.ready(game, "RockMaster"),
          {:ok, game} <- GamePlay.ready(game, "MegaRocker"),
-         {:ok, game} <- GamePlay.next(game)
-      do
+         {:ok, game} <- GamePlay.next(game) do
       assert game.status == :next_turn
-      else
-        {:error, message} -> assert "error" == message
+    else
+      {:error, message} -> assert "error" == message
     end
   end
 
@@ -71,7 +65,6 @@ defmodule GamePlayTests do
     game_second_turn = GamePlay.play(:next_turn, game)
 
     assert game_first_turn == game_second_turn
-
   end
 
   # test "The players can pick up their options and save " do
@@ -89,9 +82,6 @@ defmodule GamePlayTests do
 
   #    game = game |> GamePlay.pick_song("MegaRocker", correct_song)
   #    game = game |> GamePlay.pick_song("RockMaster", "not exist song")
-
-
-     
 
   # end
 end

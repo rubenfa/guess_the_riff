@@ -4,30 +4,28 @@ defmodule GamePlay do
   """
 
   def join(%RiffGame{players: players, status: :waiting_players} = game, nick_name) do
-    case Enum.any?(players, fn(p) -> p.nick_name == nick_name end ) do
-      true -> {:error, "There is already a player with the name #{nick_name}" }
+    case Enum.any?(players, fn p -> p.nick_name == nick_name end) do
+      true -> {:error, "There is already a player with the name #{nick_name}"}
       _ -> {:ok, RiffGame.add_player(game, PlayerGame.new(nick_name))}
     end
   end
 
   def join(_, nick_name), do: {:error, "#{nick_name} cannot join at this point of the game play"}
 
-  def ready(%RiffGame{players: players, status: :waiting_players} = game, nick_name) do
-
+  def ready(%RiffGame{status: :waiting_players} = game, nick_name) do
     with {:ok, game} <- set_player_ready(game, nick_name),
-          game <- RiffGame.start_game?(game)
-      do
-         {:ok, game}
-      else
-        {:error, message} -> {:error, message}
+         game <- RiffGame.start_game?(game) do
+      {:ok, game}
+    else
+      {:error, message} -> {:error, message}
     end
-
   end
 
-  def ready(_, nick_name), do: {:error, "#{nick_name} cannot set as ready at this point of the game play"}
+  def ready(_, nick_name),
+    do: {:error, "#{nick_name} cannot set as ready at this point of the game play"}
 
-  def next(%RiffGame{players: players, status: next_turn} = game) do
-      {:ok, RiffGame.next_turn(game)}
+  def next(%RiffGame{status: :next_turn} = game) do
+    {:ok, RiffGame.next_turn(game)}
   end
 
   def next(_), do: {:error, "Cannot play next turn at this point of the game play"}

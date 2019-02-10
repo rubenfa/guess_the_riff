@@ -66,12 +66,12 @@ defmodule RiffGameTests do
   end
 
   test "A game play should have a defined number of turns" do
-    game = RiffGame.create([turns: 10])
+    game = RiffGame.create(turns: 10)
     assert Enum.count(game.pending_turns) == 10
   end
 
   test "A game play should have a defined number of turns with different played songs" do
-    game = RiffGame.create([turns: 10])
+    game = RiffGame.create(turns: 10)
 
     played_songs =
       game.pending_turns

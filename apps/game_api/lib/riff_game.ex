@@ -6,8 +6,15 @@ defmodule RiffGame do
   @turns 4
   @max_players 4
 
-  defstruct id: "", creation_time: nil,  allowed_players: 2, status: :waiting_players,  players: [],
-            current_turn: nil, pending_turns: [], played_turns: [], score: []
+  defstruct id: "",
+            creation_time: nil,
+            allowed_players: 2,
+            status: :waiting_players,
+            players: [],
+            current_turn: nil,
+            pending_turns: [],
+            played_turns: [],
+            score: []
 
   def create(opts \\ []) do
     turns = Keyword.get(opts, :turns, @turns)
@@ -15,18 +22,18 @@ defmodule RiffGame do
 
     %RiffGame{
       id: generate_id(),
-      creation_time: NaiveDateTime.utc_now,
+      creation_time: NaiveDateTime.utc_now(),
       pending_turns: generate_turns(turns),
       allowed_players: max_players
     }
   end
 
   def get_player(game, player_name) do
-    game.players |> Enum.find(fn(p) -> p.nick_name == player_name end)
+    game.players |> Enum.find(fn p -> p.nick_name == player_name end)
   end
 
   def update_player(game, player) do
-    %{game | players: game.players |> Enum.map(fn(x) -> update_players_list(x, player) end)}
+    %{game | players: game.players |> Enum.map(fn x -> update_players_list(x, player) end)}
   end
 
   def add_players(game, []), do: game
@@ -66,18 +73,21 @@ defmodule RiffGame do
   end
 
   def start_game?(%RiffGame{players: players} = game) do
-    case players |> Enum.all?(fn(p) -> p.ready end) do
+    case players |> Enum.all?(fn p -> p.ready end) do
       true -> %{game | status: :next_turn}
       false -> game
     end
   end
 
   def next_turn(%RiffGame{pending_turns: []} = game), do: game
+
   def next_turn(%RiffGame{pending_turns: [next], played_turns: played, current_turn: nil} = game) do
     %{game | pending_turns: [], played_turns: [next | played], current_turn: next}
   end
 
-  def next_turn(%RiffGame{pending_turns: [next | pending], played_turns: played, current_turn: nil} = game) do
+  def next_turn(
+        %RiffGame{pending_turns: [next | pending], played_turns: played, current_turn: nil} = game
+      ) do
     %{game | pending_turns: pending, played_turns: [next | played], current_turn: next}
   end
 
@@ -93,12 +103,10 @@ defmodule RiffGame do
     |> Base.url_encode64()
   end
 
-
   defp update_players_list(%PlayerGame{} = p, new_player) do
-    cond do
-      p.nick_name == new_player.nick_name -> new_player
-      true -> p
+    case p.nick_name == new_player.nick_name do
+      true -> new_player
+      false -> p
     end
   end
-  
 end

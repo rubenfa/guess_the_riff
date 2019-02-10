@@ -27,8 +27,10 @@ defmodule SongAgentServer do
     Agent.get(__MODULE__, fn {songs, _} -> get_random_song(songs, songs_to_ignore) end)
   end
 
+  def get_songs(number, ignored_songs \\ [])
   def get_songs(0, _ingored_songs), do: []
-  def get_songs(number, ignored_songs \\ []) do
+
+  def get_songs(number, ignored_songs) do
     song = get_song(ignored_songs)
     [song | get_songs(number - 1, [song | ignored_songs])]
   end
