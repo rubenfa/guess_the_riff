@@ -25,7 +25,7 @@ defmodule GamePlay do
     do: {:error, "#{nick_name} cannot set as ready at this point of the game play"}
 
   def next(%RiffGame{status: :next_turn} = game) do
-    {:ok, RiffGame.next_turn(game)}
+    {:ok, RiffGame.next_turn()}
   end
 
   def next(_), do: {:error, "Cannot play next turn at this point of the game play"}

@@ -51,20 +51,28 @@ defmodule GamePlayTests do
     end
   end
 
+  test "When we pass the las turn, the status of the game is changed" do
+    game =
+      RiffGame.create(turns: 2)
+      |> RiffGame.add_player(PlayerGame.new("RockMaster"))
+      |> RiffGame.next_turn()
+      |> RiffGame.next_turn()
+
+    assert game.status == :finished
+  end
+
   test "A game turn is the same always if the options are not saved" do
     game = RiffGame.create()
 
-    game =
-      game
-      |> GamePlay.play(:join, "RockMaster")
-      |> GamePlay.play(:join, "MegaRocker")
-      |> GamePlay.play(:player_ready, "RockMaster")
-      |> GamePlay.play(:player_ready, "MegaRocker")
-
-    game_first_turn = GamePlay.play(:next_turn, game)
-    game_second_turn = GamePlay.play(:next_turn, game)
-
-    assert game_first_turn == game_second_turn
+    with {:ok, game} <- GamePlay.join(game, "RockMaster"),
+         {:ok, game} <- GamePlay.join(game, "MegaRocker"),
+         {:ok, game} <- GamePlay.ready(game, "RockMaster"),
+         {:ok, game} <- GamePlay.ready(game, "MegaRocker"),
+         {:ok, game} <- GamePlay.next(game) do
+      assert game == GamePlay.next(game)
+    else
+      {:error, message} -> assert "error" == message
+    end
   end
 
   # test "The players can pick up their options and save " do

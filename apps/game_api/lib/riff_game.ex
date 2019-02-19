@@ -47,7 +47,8 @@ defmodule RiffGame do
     %{game | players: [player | game.players]}
   end
 
-  def add_player(%RiffGame{players: pys} = game, %PlayerGame{} = player) when length(pys) < 4 do
+  def add_player(%RiffGame{players: pys, allowed_players: ap} = game, %PlayerGame{} = player)
+      when length(pys) < ap do
     case Enum.any?(pys, fn x -> x.nick_name == player.nick_name end) do
       true -> game
       false -> %{game | players: [player | game.players]}
@@ -82,13 +83,34 @@ defmodule RiffGame do
   def next_turn(%RiffGame{pending_turns: []} = game), do: game
 
   def next_turn(%RiffGame{pending_turns: [next], played_turns: played, current_turn: nil} = game) do
-    %{game | pending_turns: [], played_turns: [next | played], current_turn: next}
+    %{game | pending_turns: [], current_turn: next}
+    |> change_status(:waiting_for_songs_selections)
+  end
+
+  def next_turn(
+        %RiffGame{pending_turns: [next], played_turns: played, current_turn: current} = game
+      ) do
+    %{game | pending_turns: [], played_turns: [current | played], current_turn: next}
+    |> change_status(:waiting_for_songs_selections)
   end
 
   def next_turn(
         %RiffGame{pending_turns: [next | pending], played_turns: played, current_turn: nil} = game
       ) do
-    %{game | pending_turns: pending, played_turns: [next | played], current_turn: next}
+    %{game | pending_turns: pending, current_turn: next}
+    |> change_status(:waiting_for_songs_selections)
+  end
+
+  def next_turn(
+        %RiffGame{pending_turns: [next | pending], played_turns: played, current_turn: current} =
+          game
+      ) do
+    %{game | pending_turns: pending, played_turns: [current | played], current_turn: next}
+    |> change_status(:waiting_for_songs_selections)
+  end
+
+  defp change_status(%RiffGame{} = game, new_status) do
+    %{game | status: new_status}
   end
 
   defp generate_turns(n) do
