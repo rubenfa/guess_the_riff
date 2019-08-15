@@ -8,14 +8,14 @@ defmodule GamePlayTests do
   end
 
   test "A game does not start if has not players" do
-    game = RiffGame.create()
+    game = GameState.create()
     {:error, message} = GamePlay.next(game)
 
     assert message == "Cannot play next turn at this point of the game play"
   end
 
   test "A game cannot have two players with the same name" do
-    game = RiffGame.create()
+    game = GameState.create()
 
     with {:ok, game} <- GamePlay.join(game, "RockMaster"),
          {:error, message} <- GamePlay.join(game, "RockMaster") do
@@ -26,7 +26,7 @@ defmodule GamePlayTests do
   end
 
   test "A game does not start if all the players are not ready" do
-    game = RiffGame.create()
+    game = GameState.create()
 
     with {:ok, game} <- GamePlay.join(game, "RockMaster"),
          {:ok, game} <- GamePlay.join(game, "MegaRocker"),
@@ -38,7 +38,7 @@ defmodule GamePlayTests do
   end
 
   test "A game starts if all the players are ready" do
-    game = RiffGame.create()
+    game = GameState.create()
 
     with {:ok, game} <- GamePlay.join(game, "RockMaster"),
          {:ok, game} <- GamePlay.join(game, "MegaRocker"),
@@ -53,16 +53,16 @@ defmodule GamePlayTests do
 
   test "When we pass the las turn, the status of the game is changed" do
     game =
-      RiffGame.create(turns: 2)
-      |> RiffGame.add_player(PlayerGame.new("RockMaster"))
-      |> RiffGame.next_turn()
-      |> RiffGame.next_turn()
+      GameState.create(turns: 2)
+      |> GameState.add_player(PlayerGame.new("RockMaster"))
+      |> GameState.next_turn()
+      |> GameState.next_turn()
 
     assert game.status == :finished
   end
 
   test "A game turn is the same always if the options are not saved" do
-    game = RiffGame.create()
+    game = GameState.create()
 
     with {:ok, game} <- GamePlay.join(game, "RockMaster"),
          {:ok, game} <- GamePlay.join(game, "MegaRocker"),
@@ -76,7 +76,7 @@ defmodule GamePlayTests do
   end
 
   # test "The players can pick up their options and save " do
-  #   game = RiffGame.create()
+  #   game = GameState.create()
 
   #   game =
   #     game
